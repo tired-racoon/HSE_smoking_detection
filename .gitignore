@@ -1,0 +1,8 @@
+__pycache__/
+*.pyc
+.env
+.ipynb_checkpoints
+logs/
+onefile.py
+repo.txt
+tests/test_results/
