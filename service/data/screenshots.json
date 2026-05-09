@@ -1,0 +1,66 @@
+[
+  {
+    "id": "ss-001",
+    "camera_id": "CAM-002",
+    "address": "пл. Восстания, 2",
+    "timestamp": "2026-05-09T08:42:11",
+    "confidence": 0.94,
+    "thumbnail": null
+  },
+  {
+    "id": "ss-002",
+    "camera_id": "CAM-001",
+    "address": "ул. Невский пр., 28",
+    "timestamp": "2026-05-09T09:15:03",
+    "confidence": 0.88,
+    "thumbnail": null
+  },
+  {
+    "id": "ss-003",
+    "camera_id": "CAM-004",
+    "address": "ул. Лиговский пр., 44",
+    "timestamp": "2026-05-09T10:01:47",
+    "confidence": 0.97,
+    "thumbnail": null
+  },
+  {
+    "id": "ss-004",
+    "camera_id": "CAM-002",
+    "address": "пл. Восстания, 2",
+    "timestamp": "2026-05-09T11:33:22",
+    "confidence": 0.91,
+    "thumbnail": null
+  },
+  {
+    "id": "ss-005",
+    "camera_id": "CAM-006",
+    "address": "ул. Гороховая, 15",
+    "timestamp": "2026-05-09T12:07:58",
+    "confidence": 0.85,
+    "thumbnail": null
+  },
+  {
+    "id": "ss-006",
+    "camera_id": "CAM-001",
+    "address": "ул. Невский пр., 28",
+    "timestamp": "2026-05-09T13:44:09",
+    "confidence": 0.92,
+    "thumbnail": null
+  },
+  {
+    "id": "ss-007",
+    "camera_id": "CAM-003",
+    "address": "ул. Садовая, 12",
+    "timestamp": "2026-05-09T14:21:31",
+    "confidence": 0.79,
+    "thumbnail": null
+  },
+  {
+    "id": "ss-008",
+    "camera_id": "CAM-004",
+    "address": "ул. Лиговский пр., 44",
+    "timestamp": "2026-05-09T15:55:44",
+    "confidence": 0.96,
+    "thumbnail": null
+  }
+]

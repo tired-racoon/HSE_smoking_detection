@@ -1,0 +1,316 @@
+{% extends "base.html" %}
+{% set active_page = "analytics" %}
+
+{% block title %}SmokeWatch — Статистика{% endblock %}
+
+{% block extra_head %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<style>
+.stats-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+@media (max-width: 900px) { .stats-row { grid-template-columns: repeat(2, 1fr); } }
+
+.stat-tile {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 16px 18px;
+}
+
+.stat-tile-value {
+  font-family: var(--mono);
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--text-bright);
+  line-height: 1;
+  margin-bottom: 6px;
+}
+
+.stat-tile-value.accent { color: var(--accent); }
+.stat-tile-value.green { color: var(--green); }
+
+.stat-tile-label {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+
+.stat-tile-sub {
+  font-size: 11px;
+  color: var(--text-dim);
+  margin-top: 4px;
+}
+
+.charts-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+@media (max-width: 900px) { .charts-grid { grid-template-columns: 1fr; } }
+
+.chart-wrap {
+  position: relative;
+  width: 100%;
+  height: 220px;
+}
+
+.camera-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.camera-table th {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  text-align: left;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--border);
+}
+
+.camera-table td {
+  font-size: 12px;
+  color: var(--text);
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border);
+}
+
+.camera-table tr:last-child td { border-bottom: none; }
+.camera-table tr:hover td { background: var(--surface2); }
+
+.camera-table td:first-child {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--text-dim);
+}
+
+.bar-inline {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.bar-track {
+  flex: 1;
+  height: 4px;
+  background: var(--surface2);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.bar-fill {
+  height: 100%;
+  background: var(--accent);
+  border-radius: 2px;
+  transition: width 0.5s ease;
+}
+
+.bar-val {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--text-dim);
+  min-width: 24px;
+  text-align: right;
+}
+
+.demo-notice {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  background: var(--yellow-dim);
+  border: 1px solid rgba(232,184,74,0.25);
+  border-radius: 4px;
+  font-size: 12px;
+  color: var(--yellow);
+  margin-bottom: 20px;
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.05em;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="page-header-left">
+    <div class="page-eyebrow">Analytics</div>
+    <div class="page-title">Статистика детекций</div>
+    <div class="page-subtitle">Сводные данные по всем камерам и локациям</div>
+  </div>
+  <span class="badge badge-dim">Demo Data</span>
+</div>
+
+<div class="page-body">
+  <div class="demo-notice">
+    Отображаются демонстрационные данные. Подключите камеры для получения реальной статистики.
+  </div>
+
+  <div class="stats-row" id="stats-row">
+    <div class="stat-tile">
+      <div class="stat-tile-value accent" id="s-today">271</div>
+      <div class="stat-tile-label">Детекций сегодня</div>
+    </div>
+    <div class="stat-tile">
+      <div class="stat-tile-value" id="s-week">682</div>
+      <div class="stat-tile-label">За неделю</div>
+    </div>
+    <div class="stat-tile">
+      <div class="stat-tile-value" id="s-month">2847</div>
+      <div class="stat-tile-label">За месяц</div>
+    </div>
+    <div class="stat-tile">
+      <div class="stat-tile-value green" id="s-cameras">6</div>
+      <div class="stat-tile-label">Активных камер</div>
+    </div>
+  </div>
+
+  <div class="charts-grid">
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">Детекции по часам суток</div>
+      </div>
+      <div class="card-body">
+        <div class="chart-wrap">
+          <canvas id="hourly-chart"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">По дням недели</div>
+      </div>
+      <div class="card-body">
+        <div class="chart-wrap">
+          <canvas id="weekly-chart"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">По камерам / локациям</div>
+    </div>
+    <div class="card-body" style="padding:0">
+      <table class="camera-table" id="camera-table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Адрес</th>
+            <th>Детекций</th>
+            <th>Доля</th>
+          </tr>
+        </thead>
+        <tbody id="camera-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+async function loadAnalytics() {
+  let data;
+  try {
+    const r = await fetch('/api/analytics');
+    data = await r.json();
+  } catch(e) {
+    return;
+  }
+
+  const cAccent = '#e8424a';
+  const cDim = '#2e3640';
+  const cText = '#5a6470';
+  Chart.defaults.color = cText;
+  Chart.defaults.borderColor = '#232830';
+
+  const hourly = data.hourly || [];
+  new Chart(document.getElementById('hourly-chart'), {
+    type: 'bar',
+    data: {
+      labels: hourly.map(h => h.hour + ':00'),
+      datasets: [{
+        data: hourly.map(h => h.count),
+        backgroundColor: hourly.map(h => h.count > 15 ? 'rgba(232,66,74,0.7)' : 'rgba(232,66,74,0.25)'),
+        borderColor: 'transparent',
+        borderRadius: 2,
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { grid: { color: '#1a1e24' }, ticks: { maxTicksLimit: 12 } },
+        y: { grid: { color: '#1a1e24' }, beginAtZero: true }
+      }
+    }
+  });
+
+  const weekly = data.weekly || [];
+  new Chart(document.getElementById('weekly-chart'), {
+    type: 'bar',
+    data: {
+      labels: weekly.map(w => w.day),
+      datasets: [{
+        data: weekly.map(w => w.count),
+        backgroundColor: 'rgba(74,143,232,0.4)',
+        borderColor: 'rgba(74,143,232,0.8)',
+        borderWidth: 1,
+        borderRadius: 2,
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { grid: { color: '#1a1e24' } },
+        y: { grid: { color: '#1a1e24' }, beginAtZero: true }
+      }
+    }
+  });
+
+  const byCam = data.by_camera || [];
+  const total = byCam.reduce((s, c) => s + c.count, 0) || 1;
+  const tbody = document.getElementById('camera-tbody');
+  byCam.sort((a, b) => b.count - a.count).forEach(cam => {
+    const pct = Math.round(cam.count / total * 100);
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${cam.camera_id}</td>
+      <td>${cam.address}</td>
+      <td>${cam.count}</td>
+      <td>
+        <div class="bar-inline">
+          <div class="bar-track"><div class="bar-fill" style="width:${pct}%"></div></div>
+          <div class="bar-val">${pct}%</div>
+        </div>
+      </td>
+    `;
+    tbody.appendChild(tr);
+  });
+
+  if (data.total_today) document.getElementById('s-today').textContent = data.total_today;
+  if (data.total_week) document.getElementById('s-week').textContent = data.total_week;
+  if (data.total_month) document.getElementById('s-month').textContent = data.total_month;
+  if (data.active_cameras) document.getElementById('s-cameras').textContent = data.active_cameras;
+}
+
+loadAnalytics();
+</script>
+{% endblock %}

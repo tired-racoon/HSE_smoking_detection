@@ -6,3 +6,5 @@ logs/
 onefile.py
 repo.txt
 tests/test_results/
+venv/
+models/

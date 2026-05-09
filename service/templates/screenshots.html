@@ -1,0 +1,413 @@
+{% extends "base.html" %}
+{% set active_page = "screenshots" %}
+
+{% block title %}SmokeWatch — Скриншоты{% endblock %}
+
+{% block extra_head %}
+<style>
+.screenshots-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.filter-group {
+  display: flex;
+  gap: 6px;
+}
+
+.filter-btn {
+  padding: 5px 12px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  color: var(--text-dim);
+  cursor: pointer;
+  transition: all 0.15s;
+  text-transform: uppercase;
+}
+
+.filter-btn.active, .filter-btn:hover {
+  color: var(--text-bright);
+  border-color: var(--border-bright);
+  background: var(--surface);
+}
+
+.ss-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+}
+
+@media (max-width: 1100px) { .ss-grid { grid-template-columns: repeat(3, 1fr); } }
+@media (max-width: 800px) { .ss-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 500px) { .ss-grid { grid-template-columns: 1fr; } }
+
+.ss-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  overflow: hidden;
+  transition: border-color 0.15s, transform 0.15s;
+  cursor: pointer;
+}
+
+.ss-card:hover {
+  border-color: var(--accent);
+  transform: translateY(-1px);
+}
+
+.ss-thumb {
+  position: relative;
+  width: 100%;
+  padding-top: 56.25%;
+  background: #07090b;
+}
+
+.ss-thumb-inner {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: repeating-linear-gradient(
+    45deg,
+    transparent,
+    transparent 6px,
+    rgba(35,40,48,0.5) 6px,
+    rgba(35,40,48,0.5) 7px
+  );
+}
+
+.ss-thumb-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  opacity: 0.3;
+}
+
+.ss-thumb-icon { font-size: 20px; }
+
+.ss-confidence {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  font-family: var(--mono);
+  font-size: 10px;
+  font-weight: 700;
+  padding: 3px 7px;
+  border-radius: 3px;
+  background: rgba(232,66,74,0.85);
+  color: #fff;
+}
+
+.ss-body {
+  padding: 11px 13px;
+}
+
+.ss-cam {
+  font-family: var(--mono);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  margin-bottom: 3px;
+}
+
+.ss-address {
+  font-size: 11px;
+  color: var(--text);
+  margin-bottom: 6px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ss-time {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--text-dim);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.ss-time-date {
+  color: var(--text-dim);
+}
+
+.ss-time-clock {
+  color: var(--accent);
+  font-weight: 700;
+}
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.8);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s;
+}
+
+.modal-overlay.open {
+  opacity: 1;
+  pointer-events: all;
+}
+
+.modal {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  max-width: 600px;
+  width: 100%;
+  overflow: hidden;
+  transform: scale(0.95);
+  transition: transform 0.2s;
+}
+
+.modal-overlay.open .modal { transform: scale(1); }
+
+.modal-header {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.modal-title {
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+
+.modal-close {
+  background: none;
+  border: none;
+  color: var(--text-dim);
+  cursor: pointer;
+  padding: 4px;
+  font-size: 18px;
+  line-height: 1;
+  transition: color 0.15s;
+}
+
+.modal-close:hover { color: var(--text-bright); }
+
+.modal-thumb {
+  width: 100%;
+  padding-top: 56.25%;
+  position: relative;
+  background: #07090b;
+}
+
+.modal-thumb-inner {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: repeating-linear-gradient(
+    45deg, transparent, transparent 8px,
+    rgba(35,40,48,0.4) 8px, rgba(35,40,48,0.4) 9px
+  );
+}
+
+.modal-meta {
+  padding: 18px 20px;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+.meta-item-label {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  margin-bottom: 3px;
+}
+
+.meta-item-value {
+  font-size: 13px;
+  color: var(--text-bright);
+}
+
+.meta-item-value.accent { color: var(--accent); font-family: var(--mono); font-weight: 700; }
+
+.demo-notice {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  background: var(--yellow-dim);
+  border: 1px solid rgba(232,184,74,0.25);
+  border-radius: 4px;
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.05em;
+  color: var(--yellow);
+  margin-bottom: 18px;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="page-header-left">
+    <div class="page-eyebrow">Evidence Log</div>
+    <div class="page-title">История детекций</div>
+    <div class="page-subtitle">Скриншоты с фактами курения</div>
+  </div>
+  <div class="screenshots-toolbar">
+    <div class="filter-group">
+      <button class="filter-btn active" onclick="filterBy('all', this)">Все</button>
+      <button class="filter-btn" onclick="filterBy('today', this)">Сегодня</button>
+    </div>
+    <span class="badge badge-red" id="total-badge">0 записей</span>
+  </div>
+</div>
+
+<div class="page-body">
+  <div class="demo-notice">
+    Демонстрационные данные. Реальные скриншоты появятся при детекции курения на подключенных камерах.
+  </div>
+
+  <div class="ss-grid" id="ss-grid"></div>
+</div>
+
+<div class="modal-overlay" id="modal-overlay" onclick="closeModal(event)">
+  <div class="modal" id="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="modal-title">Детекция курения</div>
+      <button class="modal-close" onclick="document.getElementById('modal-overlay').classList.remove('open')">x</button>
+    </div>
+    <div class="modal-thumb">
+      <div class="modal-thumb-inner">
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#2e3640" stroke-width="1"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>
+      </div>
+    </div>
+    <div class="modal-meta" id="modal-meta"></div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let allScreenshots = [];
+
+function formatDateTime(ts) {
+  const d = new Date(ts);
+  const date = d.toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit', year: 'numeric' });
+  const time = d.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+  return { date, time };
+}
+
+function renderGrid(items) {
+  const grid = document.getElementById('ss-grid');
+  grid.innerHTML = '';
+  document.getElementById('total-badge').textContent = items.length + ' записей';
+
+  items.forEach(ss => {
+    const { date, time } = formatDateTime(ss.timestamp);
+    const conf = Math.round(ss.confidence * 100);
+    const card = document.createElement('div');
+    card.className = 'ss-card';
+    card.innerHTML = `
+      <div class="ss-thumb">
+        <div class="ss-thumb-inner">
+          <div class="ss-thumb-placeholder">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#2e3640" stroke-width="1.5"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>
+            <div style="font-family:var(--mono);font-size:8px;color:var(--border-bright);">NO FRAME</div>
+          </div>
+        </div>
+        <div class="ss-confidence">${conf}%</div>
+      </div>
+      <div class="ss-body">
+        <div class="ss-cam">${ss.camera_id}</div>
+        <div class="ss-address">${ss.address}</div>
+        <div class="ss-time">
+          <span class="ss-time-date">${date}</span>
+          <span class="ss-time-clock">${time}</span>
+        </div>
+      </div>
+    `;
+    card.addEventListener('click', () => openModal(ss));
+    grid.appendChild(card);
+  });
+}
+
+function openModal(ss) {
+  const { date, time } = formatDateTime(ss.timestamp);
+  const conf = Math.round(ss.confidence * 100);
+  document.getElementById('modal-title').textContent = ss.camera_id + ' — ' + time;
+  document.getElementById('modal-meta').innerHTML = `
+    <div>
+      <div class="meta-item-label">Камера</div>
+      <div class="meta-item-value">${ss.camera_id}</div>
+    </div>
+    <div>
+      <div class="meta-item-label">Уверенность</div>
+      <div class="meta-item-value accent">${conf}%</div>
+    </div>
+    <div>
+      <div class="meta-item-label">Дата</div>
+      <div class="meta-item-value">${date}</div>
+    </div>
+    <div>
+      <div class="meta-item-label">Время</div>
+      <div class="meta-item-value">${time}</div>
+    </div>
+    <div style="grid-column:1/-1">
+      <div class="meta-item-label">Адрес</div>
+      <div class="meta-item-value">${ss.address}</div>
+    </div>
+  `;
+  document.getElementById('modal-overlay').classList.add('open');
+}
+
+function closeModal(e) {
+  if (e.target === document.getElementById('modal-overlay')) {
+    document.getElementById('modal-overlay').classList.remove('open');
+  }
+}
+
+function filterBy(mode, btn) {
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  if (mode === 'today') {
+    const today = new Date().toISOString().slice(0, 10);
+    renderGrid(allScreenshots.filter(ss => ss.timestamp.startsWith(today)));
+  } else {
+    renderGrid(allScreenshots);
+  }
+}
+
+async function loadScreenshots() {
+  try {
+    const r = await fetch('/api/screenshots');
+    allScreenshots = await r.json();
+    allScreenshots.sort((a, b) => b.timestamp.localeCompare(a.timestamp));
+    renderGrid(allScreenshots);
+  } catch(e) {}
+}
+
+loadScreenshots();
+</script>
+{% endblock %}

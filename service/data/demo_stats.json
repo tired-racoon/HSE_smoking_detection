@@ -1,0 +1,50 @@
+{
+  "hourly": [
+    {"hour": 0, "count": 1},
+    {"hour": 1, "count": 0},
+    {"hour": 2, "count": 0},
+    {"hour": 3, "count": 0},
+    {"hour": 4, "count": 1},
+    {"hour": 5, "count": 2},
+    {"hour": 6, "count": 5},
+    {"hour": 7, "count": 11},
+    {"hour": 8, "count": 18},
+    {"hour": 9, "count": 14},
+    {"hour": 10, "count": 9},
+    {"hour": 11, "count": 13},
+    {"hour": 12, "count": 22},
+    {"hour": 13, "count": 19},
+    {"hour": 14, "count": 10},
+    {"hour": 15, "count": 8},
+    {"hour": 16, "count": 12},
+    {"hour": 17, "count": 21},
+    {"hour": 18, "count": 25},
+    {"hour": 19, "count": 17},
+    {"hour": 20, "count": 13},
+    {"hour": 21, "count": 9},
+    {"hour": 22, "count": 6},
+    {"hour": 23, "count": 3}
+  ],
+  "by_camera": [
+    {"camera_id": "CAM-001", "address": "ул. Невский пр., 28", "count": 47, "lat": 59.9343, "lon": 30.3351},
+    {"camera_id": "CAM-002", "address": "пл. Восстания, 2", "count": 83, "lat": 59.9301, "lon": 30.3609},
+    {"camera_id": "CAM-003", "address": "ул. Садовая, 12", "count": 31, "lat": 59.9269, "lon": 30.3204},
+    {"camera_id": "CAM-004", "address": "ул. Лиговский пр., 44", "count": 62, "lat": 59.9272, "lon": 30.3577},
+    {"camera_id": "CAM-005", "address": "наб. р. Фонтанки, 71", "count": 19, "lat": 59.9245, "lon": 30.3391},
+    {"camera_id": "CAM-006", "address": "ул. Гороховая, 15", "count": 28, "lat": 59.9282, "lon": 30.3171}
+  ],
+  "weekly": [
+    {"day": "Пн", "count": 89},
+    {"day": "Вт", "count": 74},
+    {"day": "Ср", "count": 91},
+    {"day": "Чт", "count": 68},
+    {"day": "Пт", "count": 112},
+    {"day": "Сб", "count": 145},
+    {"day": "Вс", "count": 103}
+  ],
+  "total_today": 271,
+  "total_week": 682,
+  "total_month": 2847,
+  "active_cameras": 6,
+  "detection_rate": 0.73
+}
